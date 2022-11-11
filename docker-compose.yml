@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: service-rabbitmq
+    restart: on-failure
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq
+    ports:
+      # AMQP protocol port
+      - '5672:5672'
+      # HTTP management UI
+      - '15672:15672'
+    volumes:
+      - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/
+    #      - ./.docker/rabbitmq/log/:/var/log/rabbitmq
+    networks:
+      - ms_spring
+
+  postgres:
+    image: postgres:14-alpine
+    container_name: service-postgres
+    restart: on-failure
+    volumes:
+      - ./.docker/postgresql/data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - ms_spring
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:20.0.1
+    container_name: service-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8081:8080"
+    command:
+      - start-dev
+      - --db=postgres
+      - --features=token-exchange
+      - --db-url-host=host.docker.internal
+      - --db-url-port=5433
+      #      - --db-url-properties=
+      - --db-url-database=keycloak
+      - --db-schema=public
+      - --db-username=postgres
+      - --db-password=postgres
+    #      - --import-realm
+    depends_on:
+      - postgres
+    networks:
+      - ms_spring
+
+networks:
+  ms_spring:
+    driver: bridge

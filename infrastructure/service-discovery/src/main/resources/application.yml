@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: service-discovery
+  security:
+    user:
+      name: ms-spring-discovery-user
+      password: ms-spring-discovery-password
+#
+server:
+  port: 8761
+#
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  instance:
+    instance-id: ${spring.cloud.client.hostname}:${spring.application.name}:${spring.application.instance_id:${server.port}}

@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: service-customer
+#
+server:
+  port: ${PORT:0}
+#
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://ms-spring-discovery-user:ms-spring-discovery-password@localhost:8761/eureka
+  instance:
+    instance-id: ${spring.cloud.client.hostname}:${spring.application.name}:${spring.application.instance_id:${random.value}}
+#
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+#
+#logging:
+#  file:
+#    name: ./logs/log-file.log

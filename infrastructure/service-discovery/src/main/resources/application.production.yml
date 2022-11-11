@@ -3,8 +3,8 @@ spring:
     name: service-discovery
   security:
     user:
-      name: infra-service-discovery-username
-      password: infra-service-discovery-password
+      name: ${DISCOVERY_USERNAME}
+      password: ${DISCOVERY_PASSWORD}
 #
 server:
   port: 8761

@@ -1,14 +1,6 @@
 spring:
   application:
-    name: service-evaluator
-  rabbitmq:
-    host: host.docker.internal
-    port: 5672
-    username: rabbitmq
-    password: rabbitmq
-    stream:
-      username: rabbitmq
-      password: rabbitmq
+    name: service-customer
 #
 server:
   port: 0
@@ -18,7 +10,7 @@ eureka:
     fetch-registry: true
     register-with-eureka: true
     service-url:
-      defaultZone: http://infra-service-discovery-username:infra-service-discovery-password@host.docker.internal:8761/eureka
+      defaultZone: ${DISCOVERY_URL}
   instance:
     instance-id: ${spring.cloud.client.hostname}:${spring.application.name}:${spring.application.instance_id:${random.value}}
 #
@@ -31,7 +23,3 @@ management:
 #logging:
 #  file:
 #    name: ./logs/log-file.log
-#
-mq:
-  queues:
-    cards-emit: cards-emit

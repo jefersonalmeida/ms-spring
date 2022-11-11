@@ -1,6 +1,21 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="GatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <option name="ACTIVE_PROFILES" />
+    <envs>
+      <env name="DISCOVERY_SERVER" value="host.docker.internal" />
+      <env name="DISCOVERY_PORT" value="8761" />
+      <env name="DISCOVERY_USERNAME" value="infra-service-discovery-username" />
+      <env name="DISCOVERY_PASSWORD" value="infra-service-discovery-password" />
+      <env name="KEYCLOAK_SERVER" value="host.docker.internal" />
+      <env name="KEYCLOAK_PORT" value="8081" />
+      <env name="KEYCLOAK_CLIENT_ID" value="ms-spring" />
+      <env name="KEYCLOAK_ADMIN" value="admin" />
+      <env name="KEYCLOAK_ADMIN_PASSWORD" value="admin" />
+      <env name="RABBITMQ_SERVER" value="host.docker.internal" />
+      <env name="RABBITMQ_PORT" value="5672" />
+      <env name="RABBITMQ_USERNAME" value="rabbitmq" />
+      <env name="RABBITMQ_PASSWORD" value="rabbitmq" />
+    </envs>
     <module name="service-gateway" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.jefersonalmeida.gateway.GatewayApplication" />
     <extension name="software.aws.toolkits.jetbrains.core.execution.JavaAwsConnectionExtension">

@@ -11,14 +11,14 @@ spring:
       password: rabbitmq
 #
 server:
-  port: ${PORT:0}
+  port: 0
 #
 eureka:
   client:
     fetch-registry: true
     register-with-eureka: true
     service-url:
-      defaultZone: http://ms-spring-discovery-user:ms-spring-discovery-password@localhost:8761/eureka
+      defaultZone: http://infra-service-discovery-username:infra-service-discovery-password@host.docker.internal:8761/eureka
   instance:
     instance-id: ${spring.cloud.client.hostname}:${spring.application.name}:${spring.application.instance_id:${random.value}}
 #

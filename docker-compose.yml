@@ -2,13 +2,13 @@ version: '3'
 
 services:
 
-  rabbitmq:
+  app-rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: service-rabbitmq
-    restart: on-failure
+    container_name: app-rabbitmq
+    #    restart: on-failure
     environment:
-      RABBITMQ_DEFAULT_USER: rabbitmq
-      RABBITMQ_DEFAULT_PASS: rabbitmq
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-rabbitmq}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-rabbitmq}
     ports:
       # AMQP protocol port
       - '5672:5672'
@@ -18,35 +18,35 @@ services:
       - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/
     #      - ./.docker/rabbitmq/log/:/var/log/rabbitmq
     networks:
-      - ms_spring
+      - ${DEFAULT_NETWORK:-ms-spring-network}
 
-  postgres:
+  app-db-postgresql:
     image: postgres:14-alpine
-    container_name: service-postgres
-    restart: on-failure
+    container_name: app-db-postgresql
+    #    restart: on-failure
     volumes:
       - ./.docker/postgresql/data:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - '5433:5432'
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     networks:
-      - ms_spring
+      - ${DEFAULT_NETWORK:-ms-spring-network}
 
-  keycloak:
+  app-keycloak:
     image: quay.io/keycloak/keycloak:20.0.1
-    container_name: service-keycloak
+    container_name: app-keycloak
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
     ports:
-      - "8081:8080"
+      - '8081:8080'
     command:
       - start-dev
       - --db=postgres
-      - --features=token-exchange
+      - --features=token-exchange,docker
       - --db-url-host=host.docker.internal
       - --db-url-port=5433
       #      - --db-url-properties=
@@ -56,10 +56,72 @@ services:
       - --db-password=postgres
     #      - --import-realm
     depends_on:
-      - postgres
+      - app-db-postgresql
     networks:
-      - ms_spring
+      - ${DEFAULT_NETWORK:-ms-spring-network}
+
+  infra-service-discovery:
+    image: com.jefersonalmeida/service.discovery:${SERVICE_VERSION:-latest}
+    container_name: infra-service-discovery
+    #    restart: on-failure
+    env_file:
+      - .env
+    ports:
+      - '8761:8761'
+    networks:
+      - ${DEFAULT_NETWORK:-ms-spring-network}
+
+  infra-api-gateway:
+    image: com.jefersonalmeida/service.gateway:${SERVICE_VERSION:-latest}
+    container_name: infra-api-gateway
+    #    restart: on-failure
+    env_file:
+      - .env
+    ports:
+      - '8080:8080'
+    depends_on:
+      - app-keycloak
+      - infra-service-discovery
+    networks:
+      - ${DEFAULT_NETWORK:-ms-spring-network}
+
+  service-card:
+    image: com.jefersonalmeida/service.card:${SERVICE_VERSION:-latest}
+    container_name: service-card
+    #    restart: on-failure
+    env_file:
+      - .env
+    depends_on:
+      - app-rabbitmq
+      - infra-service-discovery
+    networks:
+      - ${DEFAULT_NETWORK:-ms-spring-network}
+
+  service-customer:
+    image: com.jefersonalmeida/service.customer:${SERVICE_VERSION:-latest}
+    container_name: service-customer
+    #    restart: on-failure
+    env_file:
+      - .env
+    depends_on:
+      - infra-service-discovery
+    networks:
+      - ${DEFAULT_NETWORK:-ms-spring-network}
+
+  service-evaluator:
+    image: com.jefersonalmeida/service.evaluator:${SERVICE_VERSION:-latest}
+    container_name: service-evaluator
+    #    restart: on-failure
+    env_file:
+      - .env
+    depends_on:
+      - app-rabbitmq
+      - infra-service-discovery
+      - service-customer
+      - service-card
+    networks:
+      - ${DEFAULT_NETWORK:-ms-spring-network}
 
 networks:
-  ms_spring:
+  ms-spring-network:
     driver: bridge
